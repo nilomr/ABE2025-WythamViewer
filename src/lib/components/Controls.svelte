@@ -69,6 +69,10 @@
 	onMount(() => {
 		setTimeout(() => {
 			initializePosition();
+			// Hide menu by default on mobile
+			if (window.innerWidth < 1024) {
+				collapsed = true;
+			}
 		}, 0);
 
 		window.addEventListener('mousemove', handleMouseMove);
@@ -141,7 +145,7 @@
 		{#if collapsed}
 			<button
 				type="button"
-				class="flex items-center justify-center w-12 h-12"
+				class="flex items-center justify-center w-12 h-12 outline-none focus:ring-0 border-0"
 				on:click|stopPropagation={toggleCollapsed}
 				aria-label="Expand controls"
 			>
@@ -150,7 +154,7 @@
 		{:else}
 			<button
 				type="button"
-				class="flex items-center justify-center w-12 h-12"
+				class="flex items-center justify-center w-12 h-12 outline-none focus:ring-0 border-0"
 				on:click|stopPropagation={toggleCollapsed}
 				aria-label="Collapse controls"
 			>
