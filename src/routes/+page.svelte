@@ -4,7 +4,7 @@
 </script>
 
 <svelte:head>
-  <title>Wytham Viewer</title>
+  <title>ABE2025 | Wytham Viewer</title>
 </svelte:head>
 
 <div class="page-container">
