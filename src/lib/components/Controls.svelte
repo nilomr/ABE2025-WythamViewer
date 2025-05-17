@@ -52,6 +52,7 @@
 	let offset = { x: 0, y: 0 };
 	let hasBeenDragged = false;
 	let collapsed = false;
+	let innerWidth: number;
 
 	function initializePosition() {
 		if (menuElement && !hasBeenDragged) {
@@ -67,24 +68,33 @@
 	}
 
 	onMount(() => {
+		innerWidth = window.innerWidth;
 		setTimeout(() => {
 			initializePosition();
 			// Hide menu by default on mobile
-			if (window.innerWidth < 1024) {
+			if (innerWidth < 1024) {
 				collapsed = true;
 			}
 		}, 0);
 
 		window.addEventListener('mousemove', handleMouseMove);
 		window.addEventListener('mouseup', handleMouseUp);
-		window.addEventListener('resize', initializePosition);
+		window.addEventListener('resize', handleResize);
 	});
 
 	onDestroy(() => {
 		window.removeEventListener('mousemove', handleMouseMove);
 		window.removeEventListener('mouseup', handleMouseUp);
-		window.removeEventListener('resize', initializePosition);
+		window.removeEventListener('resize', handleResize);
 	});
+
+	function handleResize() {
+		innerWidth = window.innerWidth;
+		initializePosition();
+		if (innerWidth >= 1024) {
+			collapsed = false; // Ensure menu is not collapsed on desktop if resized from mobile
+		}
+	}
 
 	function handleMouseDown(event: MouseEvent) {
 		const target = event.target as HTMLElement;
@@ -140,7 +150,7 @@
 {/if}
 
 <!-- Mobile Caret button, center bottom, absolutely positioned -->
-{#if window.innerWidth < 1024}
+{#if innerWidth < 1024}
 	<div class="fixed left-1/2 bottom-4 z-50 -translate-x-1/2">
 		{#if collapsed}
 			<button
@@ -165,7 +175,7 @@
 {/if}
 
 <!-- Controls Menu -->
-{#if !collapsed || window.innerWidth >= 1024}
+{#if !collapsed || innerWidth >= 1024}
 	<div
 		bind:this={menuElement}
 		on:mousedown={handleMouseDown}
@@ -173,7 +183,7 @@
 		aria-label="Controls Panel"
 		tabindex="0"
 		class="fixed z-40 bg-[var(--color-menu-background)]/70 shadow-popover pointer-events-auto
-		flex flex-col lg:flex-row lg:items-center gap-2 rounded-xl p-2 lg:px-3
+		flex flex-col lg:flex-row lg:items-center gap-2 rounded-md p-2 lg:px-3
 		lg:py-3 text-zinc-100 backdrop-blur-md transition-all duration-200
 		data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95
 		w-[90vw] min-w-[90vw] max-w-[95vw] md:max-w-[450px] md:min-w-[450px] lg:w-auto lg:min-w-0 lg:max-w-none"
@@ -182,7 +192,7 @@
 			transition: opacity 2s cubic-bezier(.4,0,.2,1); opacity: {sceneLoaded ? 1 : 0};
 			pointer-events: {sceneLoaded ? 'auto' : 'none'};
 			--tw-animate-duration: 250ms;"
-		data-state={sceneLoaded && (!collapsed || window.innerWidth >= 1024) ? 'open' : 'closed'}
+		data-state={sceneLoaded && (!collapsed || innerWidth >= 1024) ? 'open' : 'closed'}
 	>
 		<!-- Drag Handle Icon (desktop only) -->
 		<div class="hidden lg:flex items-center justify-center h-10 w-auto lg:-ml-1.5 lg:-mr-1 text-zinc-400 hover:text-zinc-200 transition-colors">
@@ -195,7 +205,7 @@
 				<Tooltip.Trigger asChild>
 					<div class="w-full lg:min-w-[120px] flex flex-col">
 						<div
-							class="bg-background/80 flex w-full h-10 items-center justify-between rounded-[9px] border border-zinc-500 px-2"
+							class="bg-background/80 flex w-full h-10 items-center justify-between rounded-md border border-zinc-500 px-2"
 						>
 							<span class="mr-1 ml-1 text-sm text-zinc-300">Color
 							by</span>
@@ -204,7 +214,7 @@
 									<ToggleGroup.Item
 										aria-label={mode.label === 'None' ? 'No color' : 'Color by ' + mode.label}
 										value={mode.value}
-										class="inline-flex size-8 items-center justify-center rounded-[5px] transition-all hover:bg-zinc-700/30 data-[state=off]:text-zinc-400 data-[state=on]:bg-zinc-700/60 data-[state=on]:text-zinc-100"
+										class="inline-flex size-8 items-center justify-center rounded-lg transition-all hover:bg-zinc-700/30 data-[state=off]:text-zinc-400 data-[state=on]:bg-zinc-700/60 data-[state=on]:text-zinc-100"
 									>
 										{#if mode.icon}
 											<svelte:component this={mode.icon} class="size-5 text-zinc-300 flex-shrink-0" />
@@ -218,7 +228,7 @@
 					</div>
 				</Tooltip.Trigger>
 				<Tooltip.Content sideOffset={14}>
-					<div class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover backdrop-blur-md border border-zinc-500 rounded-xl px-3 py-2 text-xs text-zinc-300">
+					<div class="bg-[var(--color-menu-background)]/50 bg-background shadow-popover backdrop-blur-md border border-zinc-600 rounded-md px-3 py-2 text-xs text-zinc-300">
 						Choose how to color the points
 					</div>
 				</Tooltip.Content>
@@ -232,7 +242,7 @@
 					<div class="w-full lg:min-w-[120px] flex flex-col">
 						<Select.Root type="single" bind:value={selectedSpecies} items={speciesSelectItems}>
 							<Select.Trigger
-								class="bg-background/80 flex w-full lg:w-48 lg:max-w-[12rem] lg:min-w-[12rem] h-10 items-center rounded-[9px] border border-zinc-500 px-3 text-sm font-medium transition-colors select-none hover:bg-zinc-700/30 focus:ring-0 focus:outline-none data-placeholder:text-zinc-300 data-[state=open]:border-zinc-500 data-[state=open]:bg-zinc-700/50"
+								class="bg-background/80 flex w-full lg:w-48 lg:max-w-[12rem] lg:min-w-[12rem] h-10 items-center rounded-md border border-zinc-500 px-3 text-sm font-medium transition-colors select-none hover:bg-zinc-700/30 focus:ring-0 focus:outline-none data-placeholder:text-zinc-300 data-[state=open]:border-zinc-500 data-[state=open]:bg-zinc-700/50"
 								aria-label="Select species"
 							>
 								<Bird class="mr-2 size-5 text-zinc-300 flex-shrink-0" />
@@ -241,9 +251,9 @@
 							</Select.Trigger>
 							<Select.Portal>
 								<Select.Content
-									class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover focus-override data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 max-h-80 w-[var(--bits-select-anchor-width)] min-w-[var(--bits-select-anchor-width)] rounded-xl
+									class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover focus-override data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 max-h-80 w-[var(--bits-select-anchor-width)] min-w-[var(--bits-select-anchor-width)] rounded-md
 										border border-zinc-500 px-1 py-2 outline-hidden backdrop-blur-md select-none"
-									sideOffset={14}
+									sideOffset={innerWidth < 1024 ? 8 : 14}
 								>
 									<Select.ScrollUpButton
 										class="flex w-full items-center justify-center py-1 text-zinc-300"
@@ -255,7 +265,7 @@
 											<Select.Item
 												value={item.value}
 												label={item.label}
-												class="flex h-9 w-full items-center rounded-[5px] px-3 text-sm text-zinc-100 capitalize outline-hidden transition-colors select-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-700/60 data-[highlighted]:text-zinc-100"
+												class="flex h-9 w-full items-center rounded-lg px-3 text-sm text-zinc-100 capitalize outline-hidden transition-colors select-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-700/60 data-[highlighted]:text-zinc-100"
 												disabled={item.disabled}
 											>
 												{#snippet children({ selected })}
@@ -286,7 +296,7 @@
 					</div>
 				</Tooltip.Trigger>
 				<Tooltip.Content sideOffset={14}>
-					<div class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover backdrop-blur-md border border-zinc-500 rounded-xl px-3 py-2 text-xs text-zinc-300">
+					<div class="bg-[var(--color-menu-background)]/50 bg-background shadow-popover backdrop-blur-md border border-zinc-600 rounded-md px-3 py-2 text-xs text-zinc-300">
 						Filter by species
 					</div>
 				</Tooltip.Content>
@@ -300,7 +310,7 @@
 					<div class="w-full lg:min-w-[120px] flex flex-col">
 						<Select.Root type="single" bind:value={selectedSite} items={siteSelectItems}>
 							<Select.Trigger
-								class="bg-background/80 flex w-full lg:w-32 lg:max-w-[8rem] lg:min-w-[8rem] h-10 items-center rounded-[9px] border border-zinc-500 px-3 text-sm font-medium transition-colors select-none hover:bg-zinc-700/30 focus:ring-0 focus:outline-none data-placeholder:text-zinc-300 data-[state=open]:border-zinc-500 data-[state=open]:bg-zinc-700/50"
+								class="bg-background/80 flex w-full lg:w-32 lg:max-w-[8rem] lg:min-w-[8rem] h-10 items-center rounded-md border border-zinc-500 px-3 text-sm font-medium transition-colors select-none hover:bg-zinc-700/30 focus:ring-0 focus:outline-none data-placeholder:text-zinc-300 data-[state=open]:border-zinc-500 data-[state=open]:bg-zinc-700/50"
 								aria-label="Select site"
 							>
 								<MapPin class="mr-2 size-5 text-zinc-300 flex-shrink-0" />
@@ -309,9 +319,9 @@
 							</Select.Trigger>
 							<Select.Portal>
 								<Select.Content
-									class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover focus-override data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 max-h-80 w-[var(--bits-select-anchor-width)] min-w-[var(--bits-select-anchor-width)] rounded-xl
+									class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover focus-override data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 z-50 max-h-80 w-[var(--bits-select-anchor-width)] min-w-[var(--bits-select-anchor-width)] rounded-md
 										border border-zinc-500 px-1 py-2 outline-hidden backdrop-blur-md select-none"
-									sideOffset={14}
+									sideOffset={innerWidth < 1024 ? 8 : 14}
 								>
 									<Select.ScrollUpButton
 										class="flex w-full items-center justify-center py-1 text-zinc-300"
@@ -323,7 +333,7 @@
 											<Select.Item
 												value={item.value}
 												label={item.label}
-												class="flex h-9 w-full items-center rounded-[5px] px-3 text-sm text-zinc-100 capitalize outline-hidden transition-colors select-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-700/60 data-[highlighted]:text-zinc-100"
+												class="flex h-9 w-full items-center rounded-lg px-3 text-sm text-zinc-100 capitalize outline-hidden transition-colors select-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-700/60 data-[highlighted]:text-zinc-100"
 												disabled={item.disabled}
 											>
 												{#snippet children({ selected })}
@@ -346,7 +356,7 @@
 					</div>
 				</Tooltip.Trigger>
 				<Tooltip.Content sideOffset={14}>
-					<div class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover backdrop-blur-md border border-zinc-500 rounded-xl px-3 py-2 text-xs text-zinc-300">
+					<div class="bg-[var(--color-menu-background)]/50 bg-background shadow-popover backdrop-blur-md border border-zinc-600 rounded-md px-3 py-2 text-xs text-zinc-300">
 						Filter by site
 					</div>
 				</Tooltip.Content>
@@ -361,7 +371,7 @@
 						<div class="flex w-full flex-col items-stretch">
 							<div class="w-full">
 								<div
-									class="bg-background/80 flex w-full h-10 items-center rounded-[9px] border border-zinc-500 px-3 py-1 lg:py-0"
+									class="bg-background/80 flex w-full h-10 items-center rounded-md border border-zinc-500 px-3 py-1 lg:py-0"
 								>
 									<Clock class="mr-2 size-5 text-zinc-300 flex-shrink-0" />
 									<span
@@ -395,7 +405,7 @@
 											{#each thumbs as index}
 												<Slider.Thumb
 													{index}
-													class="block h-2.5 w-2.5 cursor-pointer rounded-full border border-zinc-300 bg-zinc-300 shadow-md transition-none hover:border-zinc-100 focus:border-zinc-200 focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+													class="block h-3 w-3 cursor-pointer rounded-full border border-zinc-300 bg-zinc-300 shadow-md transition-none hover:border-zinc-100 focus:border-zinc-200 focus:outline-none disabled:pointer-events-none disabled:opacity-50"
 												/>
 											{/each}
 										{/snippet}
@@ -407,7 +417,7 @@
 					</div>
 				</Tooltip.Trigger>
 				<Tooltip.Content sideOffset={14}>
-					<div class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover backdrop-blur-md border border-zinc-500 rounded-xl px-3 py-2 text-xs text-zinc-300">
+					<div class="bg-[var(--color-menu-background)]/50 bg-background shadow-popover backdrop-blur-md border border-zinc-600 rounded-md px-3 py-2 text-xs text-zinc-300">
 						Filter by time range
 					</div>
 				</Tooltip.Content>
@@ -420,7 +430,7 @@
 				<Tooltip.Trigger asChild>
 					<button
 						on:click={onReset}
-						class="bg-background/80 flex w-full lg:w-10 h-10 items-center justify-center rounded-[9px] border border-zinc-500 text-sm font-medium transition-colors hover:bg-zinc-700/30 focus:outline-none active:scale-95"
+						class="bg-background/80 flex w-full lg:w-10 h-10 items-center justify-center rounded-md border border-zinc-500 text-sm font-medium transition-colors hover:bg-zinc-700/30 focus:outline-none active:scale-95"
 						aria-label="Reset all filters"
 						type="button"
 					>
@@ -428,7 +438,7 @@
 					</button>
 				</Tooltip.Trigger>
 				<Tooltip.Content sideOffset={14}>
-					<div class="bg-[var(--color-menu-background)]/70 bg-background shadow-popover backdrop-blur-md border border-zinc-500 rounded-xl px-3 py-2 text-xs text-zinc-300">
+					<div class="bg-[var(--color-menu-background)]/50 bg-background shadow-popover backdrop-blur-md border border-zinc-600 rounded-md px-3 py-2 text-xs text-zinc-300">
 						Reset all filters
 					</div>
 				</Tooltip.Content>
