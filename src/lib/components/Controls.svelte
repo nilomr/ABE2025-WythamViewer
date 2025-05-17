@@ -12,7 +12,6 @@
 	import CaretUp from 'phosphor-svelte/lib/CaretUp';
 	import CaretDown from 'phosphor-svelte/lib/CaretDown';
 	import { onMount, onDestroy } from 'svelte';
-	import { slide } from 'svelte/transition';
 
 	export let selectedSpecies: string;
 	export let speciesSelectItems: { value: string; label: string }[];
@@ -214,10 +213,14 @@
 									<ToggleGroup.Item
 										aria-label={mode.label === 'None' ? 'No color' : 'Color by ' + mode.label}
 										value={mode.value}
-										class="inline-flex size-8 items-center justify-center rounded-lg transition-all hover:bg-zinc-700/30 data-[state=off]:text-zinc-400 data-[state=on]:bg-zinc-700/60 data-[state=on]:text-zinc-100"
+										class="inline-flex size-8 items-center justify-center rounded-sm transition-all hover:bg-zinc-500/30 data-[state=off]:text-zinc-400 data-[state=on]:bg-zinc-500/30 data-[state=on]:text-zinc-100"
 									>
 										{#if mode.icon}
-											<svelte:component this={mode.icon} class="size-5 text-zinc-300 flex-shrink-0" />
+											<svelte:component
+												this={mode.icon}
+												class="size-5 flex-shrink-0 text-zinc-300 data-[state=on]:text-zinc-100"
+												data-state={colorMode === mode.value ? 'on' : 'off'}
+											/>
 										{:else}
 											<span class="flex size-5 items-center justify-center text-zinc-400 flex-shrink-0">–</span>
 										{/if}
@@ -242,7 +245,7 @@
 					<div class="w-full lg:min-w-[120px] flex flex-col">
 						<Select.Root type="single" bind:value={selectedSpecies} items={speciesSelectItems}>
 							<Select.Trigger
-								class="bg-background/80 flex w-full lg:w-48 lg:max-w-[12rem] lg:min-w-[12rem] h-10 items-center rounded-md border border-zinc-500 px-3 text-sm font-medium transition-colors select-none hover:bg-zinc-700/30 focus:ring-0 focus:outline-none data-placeholder:text-zinc-300 data-[state=open]:border-zinc-500 data-[state=open]:bg-zinc-700/50"
+								class="bg-background/80 flex w-full lg:w-48 lg:max-w-[12rem] lg:min-w-[12rem] h-10 items-center rounded-md border border-zinc-500 px-3 text-sm font-medium transition-colors select-none hover:bg-zinc-500/30 focus:ring-0 focus:outline-none data-placeholder:text-zinc-300 data-[state=open]:border-zinc-500 data-[state=open]:bg-zinc-700/50"
 								aria-label="Select species"
 							>
 								<Bird class="mr-2 size-5 text-zinc-300 flex-shrink-0" />
@@ -265,7 +268,7 @@
 											<Select.Item
 												value={item.value}
 												label={item.label}
-												class="flex h-9 w-full items-center rounded-lg px-3 text-sm text-zinc-100 capitalize outline-hidden transition-colors select-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-700/60 data-[highlighted]:text-zinc-100"
+												class="flex h-9 w-full items-center rounded-lg px-3 text-sm text-zinc-100 capitalize outline-hidden transition-colors select-none data-[disabled]:opacity-50 hover:bg-zinc-500/30 data-[highlighted]:bg-zinc-500/30 data-[highlighted]:text-zinc-100 data-[state=checked]:bg-zinc-500/30"
 												disabled={item.disabled}
 											>
 												{#snippet children({ selected })}
@@ -310,7 +313,7 @@
 					<div class="w-full lg:min-w-[120px] flex flex-col">
 						<Select.Root type="single" bind:value={selectedSite} items={siteSelectItems}>
 							<Select.Trigger
-								class="bg-background/80 flex w-full lg:w-32 lg:max-w-[8rem] lg:min-w-[8rem] h-10 items-center rounded-md border border-zinc-500 px-3 text-sm font-medium transition-colors select-none hover:bg-zinc-700/30 focus:ring-0 focus:outline-none data-placeholder:text-zinc-300 data-[state=open]:border-zinc-500 data-[state=open]:bg-zinc-700/50"
+								class="bg-background/80 flex w-full lg:w-32 lg:max-w-[8rem] lg:min-w-[8rem] h-10 items-center rounded-md border border-zinc-500 px-3 text-sm font-medium transition-colors select-none hover:bg-zinc-500/30 focus:ring-0 focus:outline-none data-placeholder:text-zinc-300 data-[state=open]:border-zinc-500 data-[state=open]:bg-zinc-700/50"
 								aria-label="Select site"
 							>
 								<MapPin class="mr-2 size-5 text-zinc-300 flex-shrink-0" />
@@ -333,7 +336,7 @@
 											<Select.Item
 												value={item.value}
 												label={item.label}
-												class="flex h-9 w-full items-center rounded-lg px-3 text-sm text-zinc-100 capitalize outline-hidden transition-colors select-none data-[disabled]:opacity-50 data-[highlighted]:bg-zinc-700/60 data-[highlighted]:text-zinc-100"
+												class="flex h-9 w-full items-center rounded-lg px-3 text-sm text-zinc-100 capitalize outline-hidden transition-colors select-none data-[disabled]:opacity-50 hover:bg-zinc-500/30 data-[highlighted]:bg-zinc-500/30 data-[highlighted]:text-zinc-100"
 												disabled={item.disabled}
 											>
 												{#snippet children({ selected })}
@@ -371,11 +374,14 @@
 						<div class="flex w-full flex-col items-stretch">
 							<div class="w-full">
 								<div
-									class="bg-background/80 flex w-full h-10 items-center rounded-md border border-zinc-500 px-3 py-1 lg:py-0"
+									class="bg-background/80 flex w-full items-center rounded-md border border-zinc-500 px-3 py-1 lg:py-0 {innerWidth < 1024 ? 'h-12' : 'h-10'}"
 								>
 									<Clock class="mr-2 size-5 text-zinc-300 flex-shrink-0" />
 									<span
-										class="rounded border-none bg-transparent py-0.5 font-mono text-xs font-medium lg:whitespace-nowrap text-zinc-100 mr-1 lg:mr-4 flex-shrink-0"
+									class="rounded border-none bg-transparent
+									py-0.5 font-mono text-xs font-medium
+									font-stretch-condensed lg:whitespace-nowrap
+									text-zinc-100 mr-2 lg:mr-4 flex-shrink-0"
 									>
 										{#if selectedHour && selectedHour.length === 2}
 											{Math.floor(selectedHour[0] / 2)
@@ -405,7 +411,7 @@
 											{#each thumbs as index}
 												<Slider.Thumb
 													{index}
-													class="block h-3 w-3 cursor-pointer rounded-full border border-zinc-300 bg-zinc-300 shadow-md transition-none hover:border-zinc-100 focus:border-zinc-200 focus:outline-none disabled:pointer-events-none disabled:opacity-50"
+													class="{innerWidth < 1024 ? 'h-5 w-5' : 'h-3 w-3'} block cursor-pointer rounded-full border border-zinc-300 bg-zinc-300 shadow-md transition-none hover:border-zinc-100 focus:border-zinc-200 focus:outline-none disabled:pointer-events-none disabled:opacity-50"
 												/>
 											{/each}
 										{/snippet}
@@ -430,7 +436,7 @@
 				<Tooltip.Trigger asChild>
 					<button
 						on:click={onReset}
-						class="bg-background/80 flex w-full lg:w-10 h-10 items-center justify-center rounded-md border border-zinc-500 text-sm font-medium transition-colors hover:bg-zinc-700/30 focus:outline-none active:scale-95"
+						class="bg-background/80 flex w-full lg:w-10 h-10 items-center justify-center rounded-md border border-zinc-500 text-sm font-medium transition-colors hover:bg-zinc-500/30 focus:outline-none active:bg-zinc-500/30"
 						aria-label="Reset all filters"
 						type="button"
 					>
